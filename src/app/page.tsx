@@ -1,101 +1,204 @@
-import Image from "next/image";
+"use client"; // Requerido para usar hooks en componentes de Next.js
 
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { ChevronRight } from "lucide-react";
+import { ReactNode } from "react";
+
+import BlurFade from "@/components/ui/blur-fade";
+import AnimatedGradientText from "@/components/ui/animated-gradient-text";
+import RippleButton from "@/components/ui/ripple-button";
+
+import { useDragAndDrop } from "@formkit/drag-and-drop/react";
+
+import { RainbowButton } from "@/components/ui/rainbow-button"; // Importa el botón personalizado
+import { BentoCard, BentoGrid } from "@/components/ui/bento-grid";
+
+
+const features = [
+  { name: "Feature 1", description: "This is the first feature." },
+  { name: "Feature 2", description: "This is the second feature." },
+  { name: "Feature 3", description: "This is the third feature." },
+];
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const initialTodoItems = [
+    "Schedule perm",
+    "Rewind VHS tapes",
+    "Make change for the arcade",
+    "Get disposable camera developed",
+    "Learn C++",
+    "Return Nintendo Power Glove",
+  ];
+  const doneItems = ["Pickup new mix-tape from Beth"];
+  const inProgressItems = ["Debugging app issues", "Review PRs"]; // Nueva lista
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Manejo de estado para ítems
+  const [todoItems, setTodoItems] = useState(initialTodoItems);
+  const [doneListItems, setDoneListItems] = useState(doneItems);
+  const [inProgressListItems, setInProgressListItems] = useState(inProgressItems);
+
+  // Configuración de las listas con drag-and-drop
+  const [todoList, todos] = useDragAndDrop<HTMLUListElement, string>(todoItems, {
+    group: "todoList",
+  });
+  const [doneList, dones] = useDragAndDrop<HTMLUListElement, string>(doneListItems, {
+    group: "todoList",
+  });
+  const [inProgressList, inProgress] = useDragAndDrop<HTMLUListElement, string>(
+    inProgressListItems,
+    {
+      group: "todoList",
+    }
+  );
+
+  // Función para agregar un nuevo ítem a la lista "To Do"
+  const addNewItem = () => {
+    const newItem = `New Task ${todoItems.length + 1}`;
+    setTodoItems([...todoItems, newItem]);
+  };
+
+  return (
+    <>
+      {/* Primera sección */}
+      <section id="header">
+        <div className="flex h-screen w-full flex-col text-white bg-slate-950">
+          <BlurFade delay={0.25} inView>
+            <div className="flex items-center space-x-4">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-4xl/none custom-margin">
+                KanbanBoard
+              </h2>
+              <div className="z-15 flex custom-margin">
+                <AnimatedGradientText>
+                  🦊{" "}
+                  <hr className="mx-2 h-4 w-px shrink-0 bg-gray-300" />{" "}
+                  <span
+                    className={cn(
+                      `inline animate-gradient bg-gradient-to-r from-[#ffaa40] via-[#9c40ff] to-[#ffaa40] bg-[length:var(--bg-size)_100%] bg-clip-text text-transparent`,
+                    )}  
+                    style={{
+                      backgroundColor: "#ffffff", // Fondo oscuro
+                      padding: "1px 2px", // Espaciado interno
+                      borderRadius: "10px", // Bordes redondeados
+                    }}
+                  >
+                    In Process
+                  </span>
+                  <ChevronRight className="ml-1 size-3 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
+                </AnimatedGradientText>
+              </div>
+              
+            </div>
+
+            {/* Botón para agregar ítems */}
+            <div className="botonNew mb-4 text-center">
+              <RainbowButton onClick={addNewItem}>Add New Column</RainbowButton>
+            </div>
+
+            <div className="container grid grid-cols-3 gap-4 p-4">
+              {/* Lista de tareas pendientes */}
+              <div className="column bg-gray-100 p-4 rounded shadow">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold">To Do</h2>
+                  <RippleButton
+                    style={{
+                      backgroundColor: "#2E3A46", // Fondo del botón
+                      border: "1px solid rgba(255, 255, 255, 0.125)",
+                      color: "#FFFFFF", // Texto del botón
+                      transition: "all 0.3s ease", // Suaviza el efecto de hover
+                    }}
+                    rippleColor="#ADD8E6" // Efecto ripple
+                    className="hover:bg-blue-500 hover:scale-105 hover:shadow-lg" // Tailwind para hover
+                  >
+                    +
+                  </RippleButton>
+                </div>
+                <ul ref={todoList} className="space-y-2 min-h-[50px]">
+                  {todos.length === 0 ? (
+                    <li className="kanban-item bg-gray-200 p-2 rounded text-gray-500">
+                      Drag items here
+                    </li>
+                  ) : (
+                    todos.map((todo) => (
+                      <li
+                        className="kanban-item bg-white p-2 rounded shadow cursor-pointer"
+                        key={todo}
+                      >
+                        {todo}
+                      </li>
+                    ))
+                  )}
+                </ul>
+              </div>
+
+              {/* Lista de tareas en progreso */}
+              <div className="column bg-gray-100 p-4 rounded shadow">
+              <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold">In Progress</h2>
+                  <RippleButton
+                    style={{
+                      backgroundColor: "#2E3A46", // Fondo del botón
+                      border: "1px solid rgba(255, 255, 255, 0.125)",
+                      color: "#FFFFFF", // Texto del botón
+                    }}
+                    rippleColor="#ADD8E6" // Efecto ripple
+                  >
+                    +
+                  </RippleButton>
+                </div>
+                <ul ref={inProgressList} className="space-y-2 min-h-[50px]">
+                  {inProgress.length === 0 ? (
+                    <li className="kanban-item bg-gray-200 p-2 rounded text-gray-500">
+                      Drag items here
+                    </li>
+                  ) : (
+                    inProgress.map((task) => (
+                      <li
+                        className="kanban-item bg-white p-2 rounded shadow cursor-pointer"
+                        key={task}
+                      >
+                        {task}
+                      </li>
+                    ))
+                  )}
+                </ul>
+              </div>
+
+              {/* Lista de tareas completadas */}
+              <div className="column bg-gray-100 p-4 rounded shadow">
+              <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold">Done</h2>
+                  <RippleButton
+                    style={{
+                      backgroundColor: "#2E3A46", // Fondo del botón
+                      border: "1px solid rgba(255, 255, 255, 0.125)",
+                      color: "#FFFFFF", // Texto del botón
+                    }}
+                    rippleColor="#ADD8E6" // Efecto ripple
+                  >
+                    +
+                  </RippleButton>
+                </div>
+                <ul ref={doneList} className="space-y-2 min-h-[50px]">
+                  {dones.length === 0 ? (
+                    <li className="kanban-item bg-gray-200 p-2 rounded text-gray-500">
+                      Drag items here
+                    </li>
+                  ) : (
+                    dones.map((done) => (
+                      <li
+                        className="kanban-item bg-white p-2 rounded shadow cursor-pointer"
+                        key={done}
+                      >
+                        {done}
+                      </li>
+                    ))
+                  )}
+                </ul>
+              </div>
+            </div>
+          </BlurFade>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </section>
+    </>
   );
 }
