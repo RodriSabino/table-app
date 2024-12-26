@@ -7,7 +7,9 @@ export default {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/@nextui-org/theme/dist/components/modal.js"
+    "./node_modules/@nextui-org/theme/dist/components/modal.js",
+	"./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"
+
   ],
   theme: {
   	extend: {
@@ -29,7 +31,7 @@ export default {
   			secondary: {
   				DEFAULT: 'hsl(var(--secondary))',
   				foreground: 'hsl(var(--secondary-foreground))'
-  			},
+  			},	
   			muted: {
   				DEFAULT: 'hsl(var(--muted))',
   				foreground: 'hsl(var(--muted-foreground))'
@@ -94,5 +96,25 @@ export default {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate"),nextui()],
-} satisfies Config;
+  plugins: [
+    require("tailwindcss-animate"),
+    nextui({
+      themes: {
+        light: {
+          // Configuración del tema claro
+          colors: {
+            background: "#ffffff",
+            foreground: "#11181C",
+          }
+        },
+        dark: {
+          // Configuración del tema oscuro
+          colors: {
+            background: "#0C0C0C",
+            foreground: "#ECEDEE",
+          }
+        }
+      }
+    })
+  ],
+	} satisfies Config;

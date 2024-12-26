@@ -139,20 +139,28 @@ body, html {
     --color-4: 195 100% 63%;
     --color-5: 90 100% 63%;
   }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-}
-
-@layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Estilo para el backdrop (fondo oscuro detrás del modal) */
+.nextui-modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+/* Estilo para el contenedor del modal */
+.nextui-modal {
+  background-color: rgba(17, 25, 40, 0.75) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.125) !important;
+}
+
+/* Si necesitas ajustar específicamente el contenido del modal */
+.nextui-modal-content {
+  background-color: transparent !important;
 }

@@ -21,57 +21,85 @@ import {
   Button,
   useDisclosure,
 } from "@nextui-org/react";
+import { AddCardModal } from "@/components/AddCardModal"
+import { KanbanCard } from "@/components/KanbanCard";
+
+interface TaskItem {
+  title: string;
+  description?: string;
+  tags?: string[];
+  dueDate?: string;
+  members?: string[];
+}
 
 export default function Home() {
-  const initialTodoItems = ["Schedule perm", "Rewind VHS tapes"];
-  const doneItems = ["Pickup new mix-tape from Beth"];
-  const inProgressItems = ["Debugging app issues", "Review PRs"];
+  const initialTodoItems: TaskItem[] = [
+    {
+      title: "Diseñar página de inicio",
+      description: "Actualizar el diseño siguiendo las nuevas guías de UX",
+      tags: ["Alta", "Diseño"],
+      dueDate: "2024-12-28",
+      members: ["https://i.pravatar.cc/150?u=1"]
+    }
+  ];
 
-  const [todoItems, setTodoItems] = useState<string[]>(initialTodoItems);
-  const [doneListItems, setDoneItems] = useState<string[]>(doneItems);
-  const [inProgressListItems, setInProgressItems] = useState<string[]>(inProgressItems);
+  const [todoItems, setTodoItems] = useState<TaskItem[]>(initialTodoItems);
+  const [doneListItems, setDoneItems] = useState<TaskItem[]>([]);
+  const [inProgressListItems, setInProgressItems] = useState<TaskItem[]>([]);
 
-  // Declaración correcta de useDragAndDrop
-  const [todoList, todos] = useDragAndDrop<HTMLUListElement, string>(todoItems, {
-    group: "todoList",
-  });
+  // Actualizar los handlers de drag and drop
+  const [todoList, todos] = useDragAndDrop<HTMLUListElement, TaskItem>(
+    todoItems,
+    {
+      group: "todoList",
+      onChange: setTodoItems
+    }
+  );
 
-  const [doneList, dones] = useDragAndDrop<HTMLUListElement, string>(doneListItems, {
-    group: "todoList",
-  });
+  const [inProgressList, inprogress] = useDragAndDrop<HTMLUListElement, TaskItem>(
+    inProgressListItems,
+    {
+      group: "todoList",
+      onChange: setInProgressItems
+    }
+  );
 
-  const [inProgressList, inprogress] = useDragAndDrop<HTMLUListElement, string>(inProgressListItems, {
-    group: "todoList",
-  });
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [doneList, dones] = useDragAndDrop<HTMLUListElement, TaskItem>(
+    doneListItems,
+    {
+      group: "todoList",
+      onChange: setDoneItems
+    }
+  );
 
-  const [activeList, setActiveList] = useState<{
-    items: string[];
-    setter: React.Dispatch<React.SetStateAction<string[]>>;
-  }>({ items: [], setter: () => {} });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentColumn, setCurrentColumn] = useState<string>("");
 
-  const handleAddItemModal = (list: string[], setter: React.Dispatch<React.SetStateAction<string[]>>) => {
-    setActiveList({ items: list, setter });
-    onOpen();
+  const handleAddCard = (cardData: TaskItem) => {
+    switch(currentColumn) {
+      case "todo":
+        setTodoItems([...todoItems, cardData]);
+        break;
+      case "inProgress":
+        setInProgressItems([...inProgressListItems, cardData]);
+        break;
+      case "done":
+        setDoneItems([...doneListItems, cardData]);
+        break;
+    }
   };
 
-  const addItemToList = () => {
-    const newItem = `New Task ${activeList.items.length + 1}`;
-    activeList.setter([...activeList.items, newItem]);
-    onClose();
-  };
-  
   return (
     <>
       {/* Primera sección */}
       <section id="header">
-        <div className="flex h-screen w-full flex-col text-white bg-slate-950">
+        <div className="flex h-screen w-full flex-col text-white bg-slate-950 ">
           <BlurFade delay={0.25} inView>
             <div className="flex items-center space-x-4">
               <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-4xl/none custom-margin">
                 KanbanBoard
               </h2>
-              <div className="z-15 flex custom-margin">
+              <div className="z-15 flex custom-margin dark:bg-slate-900">
                 <AnimatedGradientText>
                   🦊{" "}
                   <hr className="mx-2 h-4 w-px shrink-0 bg-gray-300" />{" "}
@@ -104,15 +132,18 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold">To Do</h2>
                   <RippleButton
-                onClick={() => handleAddItemModal(todoItems, setTodoItems)}
-                style={{
-                      backgroundColor: "#2E3A46", // Fondo del botón
-                      border: "1px solid rgba(255, 255, 255, 0.125)",
-                      color: "#FFFFFF", // Texto del botón
-                      transition: "all 0.3s ease", // Suaviza el efecto de hover
+                    onClick={() => {
+                      setCurrentColumn("todo");
+                      setIsModalOpen(true);
                     }}
-                    rippleColor="#ADD8E6" // Efecto ripple
-                    className="hover:bg-blue-500 hover:scale-105 hover:shadow-lg" // Tailwind para hover
+                    style={{
+                      backgroundColor: "#2E3A46",
+                      border: "1px solid rgba(255, 255, 255, 0.125)",
+                      color: "#FFFFFF",
+                      transition: "all 0.3s ease",
+                    }}
+                    rippleColor="#ADD8E6"
+                    className="hover:bg-blue-500 hover:scale-105 hover:shadow-lg"
                   >
                     +
                   </RippleButton>
@@ -124,11 +155,14 @@ export default function Home() {
                     </li>
                   ) : (
                     todoItems.map((todo) => (
-                      <li
-                        className="kanban-item bg-white p-2 rounded shadow cursor-pointer"
-                        key={todo}
-                      >
-                        {todo}
+                      <li key={todo.title}>
+                        <KanbanCard
+                          title={todo.title}
+                          description={todo.description}
+                          tags={todo.tags}
+                          dueDate={todo.dueDate}
+                          members={todo.members}
+                        />
                       </li>
                     ))
                   )}
@@ -140,15 +174,18 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold">In Progress</h2>
                   <RippleButton
-                    onClick={() => handleAddItemModal(inProgressItems, setInProgressItems)}
-                    style={{
-                      backgroundColor: "#2E3A46", // Fondo del botón
-                      border: "1px solid rgba(255, 255, 255, 0.125)",
-                      color: "#FFFFFF", // Texto del botón
-                      transition: "all 0.3s ease", // Suaviza el efecto de hover
+                    onClick={() => {
+                      setCurrentColumn("inProgress");
+                      setIsModalOpen(true);
                     }}
-                    rippleColor="#ADD8E6" // Efecto ripple
-                    className="hover:bg-blue-500 hover:scale-105 hover:shadow-lg" // Tailwind para hover
+                    style={{
+                      backgroundColor: "#2E3A46",
+                      border: "1px solid rgba(255, 255, 255, 0.125)",
+                      color: "#FFFFFF",
+                      transition: "all 0.3s ease",
+                    }}
+                    rippleColor="#ADD8E6"
+                    className="hover:bg-blue-500 hover:scale-105 hover:shadow-lg"
                   >
                     +
                   </RippleButton>
@@ -160,11 +197,14 @@ export default function Home() {
                     </li>
                   ) : (
                     inProgressListItems.map((task) => (
-                      <li
-                        className="kanban-item bg-white p-2 rounded shadow cursor-pointer"
-                        key={task}
-                      >
-                        {task}
+                      <li key={task.title}>
+                        <KanbanCard
+                          title={task.title}
+                          description={task.description}
+                          tags={task.tags}
+                          dueDate={task.dueDate}
+                          members={task.members}
+                        />
                       </li>
                     ))
                   )}
@@ -176,16 +216,18 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold">Done</h2>
                   <RippleButton
-                onClick={() => handleAddItemModal(doneItems, setDoneItems)}
-                  style={{
-                      backgroundColor: "#2E3A46", // Fondo del botón
-                      border: "1px solid rgba(255, 255, 255, 0.125)",
-                      color: "#FFFFFF", // Texto del botón
-                      transition: "all 0.3s ease", // Suaviza el efecto de hover
+                    onClick={() => {
+                      setCurrentColumn("done");
+                      setIsModalOpen(true);
                     }}
-                    rippleColor="#ADD8E6" // Efecto ripple
-                    className="hover:bg-blue-500 hover:scale-105 hover:shadow-lg" // Tailwind para hover
-
+                    style={{
+                      backgroundColor: "#2E3A46",
+                      border: "1px solid rgba(255, 255, 255, 0.125)",
+                      color: "#FFFFFF",
+                      transition: "all 0.3s ease",
+                    }}
+                    rippleColor="#ADD8E6"
+                    className="hover:bg-blue-500 hover:scale-105 hover:shadow-lg"
                   >
                     +
                   </RippleButton>
@@ -199,9 +241,15 @@ export default function Home() {
                     doneListItems.map((done) => (
                       <li
                         className="kanban-item bg-white p-2 rounded shadow cursor-pointer"
-                        key={done}
+                        key={done.title}
                       >
-                        {done}
+                        <KanbanCard
+                          title={done.title}
+                          description={done.description}
+                          tags={done.tags}
+                          dueDate={done.dueDate}
+                          members={done.members}
+                        />
                       </li>
                     ))
                   )}
@@ -212,7 +260,7 @@ export default function Home() {
         </div>
       </section>
       {/* Modal */}
-      <Modal backdrop="blur" isOpen={isOpen} onClose={onClose}>
+      <Modal backdrop="blur" isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <ModalContent>
           <>
             <ModalHeader className="flex flex-col gap-1">Add New Task</ModalHeader>
@@ -220,16 +268,22 @@ export default function Home() {
               <p>Are you sure you want to add a new task?</p>
             </ModalBody>
             <ModalFooter>
-              <Button color="danger" variant="light" onPress={onClose}>
+              <Button color="danger" variant="light" onPress={() => setIsModalOpen(false)}>
                 Cancel
               </Button>
-              <Button color="primary" onPress={addItemToList}>
+              <Button color="primary" onPress={handleAddCard}>
                 Confirm
               </Button>
             </ModalFooter>
           </>
         </ModalContent>
       </Modal>
+
+      <AddCardModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleAddCard}
+      />
     </>
   );
 }
